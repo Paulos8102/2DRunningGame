@@ -8,6 +8,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     private Rigidbody2D rb;
+    private Animator anim;
     private BoxCollider2D coll;
 
     [SerializeField] private LayerMask jumpableGround;
@@ -16,6 +17,7 @@ public class PlayerMovement : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
         coll = GetComponent<BoxCollider2D>();
     }
 
@@ -29,6 +31,19 @@ public class PlayerMovement : MonoBehaviour
         {
             jumpSoundEffect.Play();
             rb.velocity = new Vector2(rb.velocity.x, 10f);    //setting speed for player
+        }
+
+        if (dirX > 0f) //to check if running
+        {
+            anim.SetBool("running", true);
+        }
+        else if (dirX < 0f)
+        {
+            anim.SetBool("running", true);
+        }
+        else
+        {
+            anim.SetBool("running", false);
         }
     }
     private bool IsGrounded()   //to be able to jump only when above the ground
