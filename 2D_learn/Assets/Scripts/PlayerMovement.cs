@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -13,6 +14,10 @@ public class PlayerMovement : MonoBehaviour
     private BoxCollider2D coll;
 
     private float dirX = 0f;
+    [SerializeField] private float moveSpeed = 7f;
+    [SerializeField] private float jumpForce = 10f;
+
+    private enum MovementState { idle, running, jumping, falling }
 
     [SerializeField] private LayerMask jumpableGround;
 
@@ -29,33 +34,46 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         dirX = Input.GetAxisRaw("Horizontal");
-        rb.velocity = new Vector2(dirX * 7f, rb.velocity.y);
+        rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
 
         if (Input.GetButtonDown("Jump") && IsGrounded())  //To avoid flying when space is held on for long
         {
             jumpSoundEffect.Play();
-            rb.velocity = new Vector2(rb.velocity.x, 10f);    //setting speed for player
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);    //setting speed for player
         }
 
-        UpdateAnimationUpdate();
+        UpdateAnimationState();
     }
 
-    private void UpdateAnimationUpdate()
+    private void UpdateAnimationState()
     {
+        MovementState state;
+
         if (dirX > 0f) //to check if running
         {
-            anim.SetBool("running", true);
+            state = MovementState.running;
             sprite.flipX = false;
         }
         else if (dirX < 0f)
         {
-            anim.SetBool("running", true);
+            state = MovementState.running;
             sprite.flipX = true;
         }
         else
         {
-            anim.SetBool("running", false);
+            state = MovementState.idle;
         }
+
+        if (rb.velocity.y > .1f)
+        {
+            state = MovementState.jumping;
+        }
+        else if (rb.velocity.y < -.1f)
+        {
+            state = MovementState.falling;
+        }
+
+        anim.SetInteger("state", (int)state);
     }
 
     private bool IsGrounded()   //to be able to jump only when above the ground
